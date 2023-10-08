@@ -174,5 +174,6 @@
   "highlight-matching-tag.customEmptyElements": [
     "custom",
     "no-content"
-  ]
+  ],
+  "prettier.singleAttributePerLine": true,
 }

@@ -5,9 +5,6 @@
 /.pnp
 .pnp.js
 
-# dev contains all the packages that are not needed in production
-*/devcontainer
-
 # testing
 /coverage
 
