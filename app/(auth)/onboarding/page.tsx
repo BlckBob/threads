@@ -9,10 +9,10 @@ async function page() {
   const userData = {
     id: user?.id as string,
     objectId: userInfo?._id as string,
-    username: userInfo?.username as string || user?.username as string,
-    name: userInfo?.name as string || user?.firstName || '',
-    bio: userInfo?.bio as string || '',
-    image: userInfo?.image as string || user?.imageUrl as string,
+    username: (userInfo?.username as string) || (user?.username as string),
+    name: (userInfo?.name as string) || user?.firstName || '',
+    bio: (userInfo?.bio as string) || '',
+    image: (userInfo?.image as string) || (user?.imageUrl as string),
   }
 
   return (
@@ -23,10 +23,7 @@ async function page() {
       </p>
 
       <section className='mt-9 bg-dark-2 p-10'>
-        <AccountProfile
-          user={userData}
-          btnTitle='Continue'
-         />
+        <AccountProfile user={userData} btnTitle='Continue' />
       </section>
     </main>
   )

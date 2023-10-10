@@ -10,7 +10,10 @@
     // "editorCursor.foreground": "#ee8a42",
     // "editorCursor.foreground": "#ffed65",
     "editorRuler.foreground": "#ff4081",
-    "tab.activeBorder": "#ff6f00",
+    // "tab.border": "#000000",
+    // "tab.activeBorder": "#ff6f00", // active 09.10.2023.
+    "tab.activeBorderTop": "#ff6f00",
+    // "tab.unfocusedActiveBorderTop": "#ff6f00",
     "tab.unfocusedActiveBorder": "#000000",
     // "tab.activeBackground": "#ff9500",
     // "editor.background": "#1b1a1a",
@@ -20,13 +23,14 @@
     // "editorIndentGuide.background": "#404040",
     // "activityBarBadge.background": "#007acc",
     // "sideBarTitle.foreground": "#bbbbbb",
-    "editor.lineHighlightBackground": "#0D0D0D"// "#000000ad",
+    "editor.lineHighlightBackground": "#0d0d0dca"// "#0D0D0D"// "#000000ad",
     "statusBar.background": "#1a1f2f",
     "statusBar.foreground": "#ffff037a",
     "statusBar.border": "#f2ff0333",
     // "statusBar.noFolderBackground": "#ff0000",
     // "statusBarItem.prominentHoverBackground": "#ff9500",
-    "statusBarItem.hoverBackground": "#1E2355",
+    "statusBarItem.hoverBackground": "#0d2618", // "#1E2355" 09.10.2023.
+    "statusBarItem.hoverForeground": "#ffbc04", // active 09.10.2023.
     // "editorCursor.foreground": "#cafe0b",
     "editorCursor.foreground": "#ff6f00",
     "scrollbarSlider.background": "#ff6f0022",
