@@ -64,15 +64,13 @@ export async function createThread({
 
     // Update user model
     await User.findByIdAndUpdate(author, {
-      $push: { threads: createdThread._id/*  as string  */},
+      $push: { threads: createdThread._id /*  as string  */ },
     })
 
     revalidatePath(path)
-  } catch (error) {
-    let errMsg = 'Unknown error'
-    if (error instanceof Error) {
-      errMsg = error.message
-    }
+  } catch (error: any) {
+    const errMsg: string =
+      error instanceof Error ? error.message : String(error) || 'Unknown error'
     throw new Error(`Failed to create thread: ${errMsg}`)
   }
 }
@@ -114,12 +112,10 @@ export async function fetchThreadById(threadId: string) {
       .exec()
 
     return thread
-  } catch (err) {
-    let errMsg = 'Unknown error'
-    if (err instanceof Error) {
-      errMsg = err.message
-    }
-    throw new Error(`Failed to fetch thread: ${errMsg}`)
+  } catch (error: any) {
+    const errMsg: string =
+      error instanceof Error ? error.message : String(error) || 'Unknown error'
+    throw new Error(`Failed to fetch thread by ID: ${errMsg}`)
   }
 }
 
@@ -127,16 +123,16 @@ export async function addCommentToThread(
   threadId: string,
   commentText: string,
   userId: string,
-  path: string
+  path: string,
 ) {
-  connectToDB();
+  connectToDB()
 
   try {
     // Find the original thread by its ID
-    const originalThread = await Thread.findById(threadId);
+    const originalThread = await Thread.findById(threadId)
 
     if (!originalThread) {
-      throw new Error("Thread not found");
+      throw new Error('Thread not found')
     }
 
     // Create the new comment thread
@@ -144,23 +140,21 @@ export async function addCommentToThread(
       text: commentText,
       author: userId,
       parentId: threadId, // Set the parentId to the original thread's ID
-    });
+    })
 
     // Save the comment thread to the database
-    const savedCommentThread = await commentThread.save();
+    const savedCommentThread = await commentThread.save()
 
     // Add the comment thread's ID to the original thread's children array
-    originalThread.children.push(savedCommentThread._id);
+    originalThread.children.push(savedCommentThread._id)
 
     // Save the updated original thread to the database
-    await originalThread.save();
+    await originalThread.save()
 
-    revalidatePath(path);
-  } catch (err) {
-    let errMsg = 'Unknown error'
-    if (err instanceof Error) {
-      errMsg = err.message
-    }
-    throw new Error(`Failed to fetch thread: ${errMsg}`)
+    revalidatePath(path)
+  } catch (error: any) {
+    const errMsg: string =
+      error instanceof Error ? error.message : String(error) || 'Unknown error'
+    throw new Error(`Failed to add thread: ${errMsg}`)
   }
 }

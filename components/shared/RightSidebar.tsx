@@ -1,4 +1,15 @@
-export default function RightSidebar() {
+import { currentUser } from '@clerk/nextjs'
+import { fetchUsers } from '@/lib/actions/user.actions'
+
+export default async function RightSidebar() {
+  const user = await currentUser()
+  if (!user) return null
+
+  const similarMinds = await fetchUsers({
+    userId: user.id,
+    pageSize: 4,
+  })
+
   return (
     <section className='custom-scrollbar rightsidebar'>
       <div className='flex flex-1 flex-col justify-start'>
