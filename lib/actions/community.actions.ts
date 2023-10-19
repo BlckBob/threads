@@ -1,44 +1,3 @@
-// 'use server'
-
-// import { connectToDB } from '../mongoose'
-// import Community from '../models/community.model'
-// import Thread from '../models/thread.model'
-// import User from '../models/user.model'
-// import { AnyNsRecord } from 'dns'
-
-// export async function fetchCommunityPosts(id: string) {
-//   connectToDB()
-
-//   try {
-//     const communityPosts = await Community.findById(id).populate({
-//       path: 'threads',
-//       model: Thread,
-//       populate: [
-//         {
-//           path: 'author',
-//           model: User,
-//           select: 'name image id', // Select the "name" and "_id" fields from the "User" model
-//         },
-//         {
-//           path: 'children',
-//           model: Thread,
-//           populate: {
-//             path: 'author',
-//             model: User,
-//             select: 'image _id', // Select the "name" and "_id" fields from the "User" model
-//           },
-//         },
-//       ],
-//     })
-
-//     return communityPosts
-//   } catch (error: any) {
-//     const errMsg: string =
-//       error instanceof Error ? error.message : String(error) || 'Unknown error'
-//     throw new Error(`Error fetching community posts: ${errMsg}`)
-//   }
-// }
-
 'use server'
 
 import { FilterQuery, SortOrder } from 'mongoose'
@@ -56,10 +15,9 @@ export async function createCommunity(
   image: string,
   bio: string,
   createdById: string, // Change the parameter name to reflect it's an id
-) {
-  connectToDB()
-
+) {  
   try {
+    connectToDB()
     // Find the user with the provided unique id
     const user = await User.findOne({ id: createdById })
 
@@ -90,10 +48,9 @@ export async function createCommunity(
   }
 }
 
-export async function fetchCommunityDetails(id: string) {
-  connectToDB()
-
+export async function fetchCommunityDetails(id: string) {  
   try {
+    connectToDB()
     const communityDetails = await Community.findOne({ id }).populate([
       'createdBy',
       {
@@ -111,10 +68,9 @@ export async function fetchCommunityDetails(id: string) {
   }
 }
 
-export async function fetchCommunityPosts(id: string) {
-  connectToDB()
-
+export async function fetchCommunityPosts(id: string) {  
   try {
+    connectToDB()
     const communityPosts = await Community.findById(id).populate({
       path: 'threads',
       model: Thread,
@@ -154,10 +110,9 @@ export async function fetchCommunities({
   pageNumber?: number
   pageSize?: number
   sortBy?: SortOrder
-}) {
-  connectToDB()
-
+}) {  
   try {
+    connectToDB()
     // Calculate the number of communities to skip based on the page number and page size.
     const skipAmount = (pageNumber - 1) * pageSize
 
@@ -200,10 +155,9 @@ export async function fetchCommunities({
 export async function addMemberToCommunity(
   communityId: string,
   memberId: string,
-) {
-  connectToDB()
-
+) {  
   try {
+    connectToDB()
     // Find the community by its unique id
     const community = await Community.findOne({ id: communityId })
 
@@ -242,10 +196,9 @@ export async function addMemberToCommunity(
 export async function removeUserFromCommunity(
   userId: string,
   communityId: string,
-) {
-  connectToDB()
-
+) {  
   try {
+    connectToDB()
     const userIdObject = await User.findOne({ id: userId }, { _id: 1 })
     const communityIdObject = await Community.findOne(
       { id: communityId },
@@ -285,10 +238,9 @@ export async function updateCommunityInfo(
   name: string,
   username: string,
   image: string,
-) {
-  connectToDB()
-
+) {  
   try {
+    connectToDB()
     // Find the community by its _id and update the information
     const updatedCommunity = await Community.findOneAndUpdate(
       { id: communityId },
@@ -308,9 +260,8 @@ export async function updateCommunityInfo(
 }
 
 export async function deleteCommunity(communityId: string) {
-  connectToDB()
-
   try {
+    connectToDB()
     // Find the community by its ID and delete it
     const deletedCommunity = await Community.findOneAndDelete({
       id: communityId,

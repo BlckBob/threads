@@ -7,6 +7,21 @@ import Thread from '../models/thread.model'
 import Community from '../models/community.model'
 import mongoose, { FilterQuery, SortOrder } from 'mongoose'
 
+export async function fetchUser(userId: string) {
+  try {
+    connectToDB()
+
+    return await User.findOne({ id: userId }).populate({
+      path: 'communities',
+      model: 'Community',
+    })
+  } catch (error: any) {
+    const errMsg: string =
+      error instanceof Error ? error.message : String(error) || 'Unknown error'
+    throw new Error(`Failed to fetch user: ${errMsg}`)
+  }
+}
+
 interface Params {
   userId: string
   username: string
@@ -24,9 +39,9 @@ export async function updateUser({
   image,
   path,
 }: Params): Promise<void> {
-  connectToDB()
-
   try {
+    connectToDB()
+
     await User.findOneAndUpdate(
       { id: userId },
       {
@@ -46,22 +61,6 @@ export async function updateUser({
     const errMsg: string =
       error instanceof Error ? error.message : String(error) || 'Unknown error'
     throw new Error(`Failed to create/update user: ${errMsg}`)
-  }
-}
-
-export async function fetchUser(userId: string) {
-  try {
-    connectToDB()
-
-    return await User.findOne({ id: userId })
-    // .populate({
-    //     path: 'communities',
-    //     model: 'Community',
-    // })
-  } catch (error: any) {
-    const errMsg: string =
-      error instanceof Error ? error.message : String(error) || 'Unknown error';
-    throw new Error(`Failed to fetch user: ${errMsg}`)
   }
 }
 
@@ -112,9 +111,9 @@ export async function fetchUsers({
   pageSize?: number
   sortBy?: SortOrder
 }) {
-  connectToDB()
-
   try {
+    connectToDB()
+
     // Calculate the number of users to skip based on the page number and page size.
     const skipAmount = (pageNumber - 1) * pageSize
 
@@ -155,38 +154,16 @@ export async function fetchUsers({
   }
 }
 
-interface IThreadMod {
-  text: string
-  author: mongoose.Types.ObjectId
-  createdAt: Date
-  children: mongoose.Types.ObjectId[]
-  community?: mongoose.Types.ObjectId | undefined
-  parentId?: string | undefined
-}
-
 export async function fetchActivity(userId: string) {
-  connectToDB()
-
   try {
+    connectToDB()
+
     // Find all threads created by the user
-    const userThreads: IThreadMod[] = await Thread.find({ author: userId })
-
-    // Collect all the child thread ids (replies) from the 'children' field of each user thread
-    const childThreadIds: mongoose.Types.ObjectId[] = []
-
-    for (let i = 0; i < userThreads.length; i++) {
-      const userThread = userThreads[i]
-      childThreadIds.push(...userThread.children)
-    }
-    // const childThreadIds: mongoose.Types.ObjectId[] = (
-    //   [] as mongoose.Types.ObjectId[]
-    // ).concat(...userThreads.map((userThread) => userThread.children))
-    // const childThreadIds: mongoose.Types.ObjectId[] = userThreads.reduce(
-    //   (acc, userThread) => {
-    //     return acc.concat(userThread.children)
-    //   },
-    //   [] as mongoose.Types.ObjectId[],
-    // )
+    const userThreads = await Thread.find({ author: userId })
+    
+    const childThreadIds = userThreads.reduce((acc, userThread) => {
+      return acc.concat(userThread.children)
+    }, [])
 
     // Find and return the child threads (replies) excluding the ones created by the same user
     const replies = await Thread.find({

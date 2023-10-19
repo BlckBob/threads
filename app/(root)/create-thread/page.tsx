@@ -21,7 +21,7 @@ export default async function page() {
     <>
       <h1 className='head-text'>Create Thread</h1>
 
-      <PostThread userId={/* JSON.stringify( */userInfo._id as string} />
+      <PostThread userId={JSON.stringify(userInfo._id)} />
     </>
   )
 }

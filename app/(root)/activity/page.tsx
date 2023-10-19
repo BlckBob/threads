@@ -17,7 +17,9 @@ export default async function Page() {
     <>
       <h1 className='head-text'>Activity</h1>
       <section className='flex flex-col mt-10 gap-5'>
-        {activities?.length > 0 ? (
+        {activities?.length === 0 ? (
+          <p className='!text-base-regular text-light-3'>No activity yet</p>
+        ) : (
           <>
             {activities.map((activity) => (
               <Link key={activity._id} href={`/thread/${activity.parentId}`}>
@@ -39,8 +41,6 @@ export default async function Page() {
               </Link>
             ))}
           </>
-        ) : (
-          <p className='!text-base-regular text-light-3'>No activity yet</p>
         )}
       </section>
     </>

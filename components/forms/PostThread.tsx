@@ -1,9 +1,10 @@
-'use client'
+'use client';
 
-import { useForm } from 'react-hook-form'
-import { usePathname, useRouter } from 'next/navigation'
-import { zodResolver } from '@hookform/resolvers/zod'
-import * as z from 'zod'
+import { useForm } from 'react-hook-form';
+import { usePathname, useRouter } from 'next/navigation';
+import { useOrganization } from '@clerk/nextjs';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
 
 import {
   Form,
@@ -12,38 +13,37 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/components/ui/form'
-import { Button } from '@/components/ui/button'
-import { Textarea } from '@/components/ui/textarea'
+} from '@/components/ui/form';
+import { Button } from '@/components/ui/button';
+import { Textarea } from '@/components/ui/textarea';
 
-import { ThreadValidation } from '@/lib/validations/thread'
-import { createThread } from '@/lib/actions/thread.actions'
+import { ThreadValidation } from '@/lib/validations/thread';
+import { createThread } from '@/lib/actions/thread.actions';
 
 interface Props {
-  userId: string
+  userId: string;
 }
-
 export default function PostThread({ userId }: Props) {
-  const router = useRouter()
-  const pathname = usePathname()
+  const router = useRouter();
+  const pathname = usePathname();
+  const { organization } = useOrganization();
 
-  const form = useForm({
+  const form = useForm<z.infer<typeof ThreadValidation>>({
     resolver: zodResolver(ThreadValidation),
     defaultValues: {
       thread: '',
-      accountId: userId,
+      accountId: JSON.parse(userId),
     },
-  })
+  });
 
-  const onSubmit = async (values: z.infer<typeof ThreadValidation>) => {
+  async function onSubmit(values: z.infer<typeof ThreadValidation>) {
     await createThread({
       text: values.thread,
-      author: userId,
-      communityId: null,
+      author: JSON.parse(userId),
+      communityId: organization ? organization.id : null,
       path: pathname,
-    })
-
-    router.push('/')
+    });
+    router.push('/');
   }
 
   return (
@@ -72,5 +72,5 @@ export default function PostThread({ userId }: Props) {
         </Button>
       </form>
     </Form>
-  )
+  );
 }

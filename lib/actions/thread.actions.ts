@@ -23,6 +23,10 @@ export async function fetchPosts(pageNumber = 1, pageSize = 20) {
       model: User,
     })
     .populate({
+      path: 'community',
+      model: Community,
+    })
+    .populate({
       path: 'children',
       populate: {
         path: 'author',
@@ -53,19 +57,30 @@ export async function createThread({
   communityId,
   path,
 }: Params): Promise<void> {
-  connectToDB()
-
   try {
+    connectToDB()
+    const communityIdObject = await Community.findOne(
+      { id: communityId },
+      { _id: 1 },
+    )
+
     const createdThread = await Thread.create({
       text,
       author,
-      community: null,
+      community: communityIdObject || null,
     })
 
     // Update user model
     await User.findByIdAndUpdate(author, {
-      $push: { threads: createdThread._id /*  as string  */ },
+      $push: { threads: createdThread._id },
     })
+
+    if (communityIdObject) {
+      // Update community model
+      await Community.findByIdAndUpdate(communityIdObject, {
+        $push: { threads: createdThread._id },
+      })
+    }
 
     revalidatePath(path)
   } catch (error: any) {
@@ -75,10 +90,77 @@ export async function createThread({
   }
 }
 
-export async function fetchThreadById(threadId: string) {
-  connectToDB()
+async function fetchAllChildThreads(threadId: string): Promise<any[]> {
+  const childThreads = await Thread.find({ parentId: threadId })
 
+  const descendantThreads = []
+  for (const childThread of childThreads) {
+    const descendants = await fetchAllChildThreads(childThread._id)
+    descendantThreads.push(childThread, ...descendants)
+  }
+
+  return descendantThreads
+}
+
+export async function deleteThread(id: string, path: string) {
   try {
+    connectToDB()
+    // fain the thread by its unique id
+    const mainThread = await Thread.findById(id).populate('author community')
+    if (!mainThread) throw new Error('Thread not found')
+
+    // fetch all child threads and their descendants recursively
+    const descendantThreads = await fetchAllChildThreads(id)
+
+    // Get all descendant thread IDs including the main and child thread IDs
+    const descendantThreadIds = [
+      id,
+      ...descendantThreads.map((thread: any) => thread._id),
+    ]
+
+    // Extract the authorIds and communityIds to update models respectively
+    const uniqueAuthorIds = new Set(
+      [
+        ...descendantThreads.map((thread: any) =>
+          thread.author?._id?.toString(),
+        ),
+        mainThread.author?._id?.toString(),
+      ].filter((id) => id !== undefined),
+    )
+    const uniqueCommunityIds = new Set(
+      [
+        ...descendantThreads.map((thread: any) =>
+          thread.community?._id?.toString(),
+        ),
+        mainThread.community?._id?.toString(),
+      ].filter((id) => id !== undefined),
+    )
+
+    // Recursively delete child threads and their descendants
+    await Thread.deleteMany({ _id: { $in: descendantThreadIds } })
+
+    await User.updateMany(
+      // Update User model
+      { _id: { $in: Array.from(uniqueAuthorIds) } },
+      { $pull: { threads: { $in: descendantThreadIds } } },
+    )
+
+    await Community.updateMany(
+      // Update Community model
+      { _id: { $in: Array.from(uniqueCommunityIds) } },
+      { $pull: { threads: { $in: descendantThreadIds } } },
+    )
+    revalidatePath(path)
+  } catch (error: any) {
+    const errMsg: string =
+      error instanceof Error ? error.message : String(error) || 'Unknown error'
+    throw new Error(`Failed to delete thread: ${errMsg}`)
+  }
+}
+
+export async function fetchThreadById(threadId: string) {
+  try {
+    connectToDB()
     const thread = await Thread.findById(threadId)
       .populate({
         path: 'author',
@@ -125,9 +207,8 @@ export async function addCommentToThread(
   userId: string,
   path: string,
 ) {
-  connectToDB()
-
   try {
+    connectToDB()
     // Find the original thread by its ID
     const originalThread = await Thread.findById(threadId)
 

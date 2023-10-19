@@ -30,7 +30,7 @@ export default function Pagination({ pageNumber, isNext, path }: Props) {
   }
 
   return (
-    <div className='Pagination'>
+    <div className='pagination'>
       <Button
         onClick={() => handleNavigation('prev')}
         disabled={pageNumber === 1}
